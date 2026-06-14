@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import socket from "../socket";
 
 function WaitingRoom() {
   const [patients, setPatients] = useState([]);
@@ -11,6 +12,11 @@ function WaitingRoom() {
 
   useEffect(() => {
     fetchQueue();
+     socket.on("queueUpdated", fetchQueue);
+
+  return () => {
+    socket.off("queueUpdated", fetchQueue);
+  };
   }, []);
 
   const servingPatient = patients.find((p) => p.status === "serving");

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import socket from "../socket";
 
 function Receptionist() {
   const [name, setName] = useState("");
@@ -34,6 +35,11 @@ function Receptionist() {
 
   useEffect(() => {
     fetchQueue();
+    socket.on("queueUpdated", fetchQueue);
+
+  return () => {
+    socket.off("queueUpdated", fetchQueue);
+     };
   }, []);
 
   const waitingPatients = patients.filter((p) => p.status === "waiting");

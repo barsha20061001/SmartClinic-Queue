@@ -18,6 +18,9 @@ export const addPatient = async (req, res) => {
       status: "waiting",
     });
 
+    const io = req.app.get("io");
+    io.emit("queueUpdated");
+
     res.status(201).json({
       message: "Patient added successfully",
       patient,
@@ -64,6 +67,10 @@ export const callNextPatient = async (req, res) => {
 
     nextPatient.status = "serving";
     await nextPatient.save();
+
+    const io = req.app.get("io");
+    io.emit("queueUpdated");
+    io.emit("currentTokenUpdated", nextPatient);
 
     res.status(200).json({
       message: "Next patient called",
