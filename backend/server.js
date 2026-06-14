@@ -2,7 +2,9 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import http from "http";
+import mongoose from "mongoose";
 import { Server } from "socket.io";
+import patientRoutes from "./routes/patientRoutes.js";
 
 dotenv.config();
 
@@ -23,6 +25,8 @@ app.get("/", (req, res) => {
   res.send("Queue Cure backend is running");
 });
 
+app.use("/api/patients", patientRoutes);
+
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
@@ -30,6 +34,15 @@ io.on("connection", (socket) => {
     console.log("User disconnected:", socket.id);
   });
 });
+
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("MongoDB Connected");
+  })
+  .catch((error) => {
+    console.log("MongoDB connection error:", error.message);
+  });
 
 const PORT = process.env.PORT || 5000;
 
