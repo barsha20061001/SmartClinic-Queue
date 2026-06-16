@@ -16,18 +16,29 @@ function WaitingRoom() {
     setAverageTime(res.data.averageConsultationTime);
   };
 
+  const playBell = () => {
+  const audio = new Audio("/bell.wav");
+  audio.play().catch(() => {
+    console.log("Sound blocked until user interacts with page");
+  });
+};
+
   useEffect(() => {
+  fetchQueue();
+  fetchSetting();
+
+  socket.on("queueUpdated", () => {
     fetchQueue();
-    fetchSetting();
+    playBell();
+  });
 
-    socket.on("queueUpdated", fetchQueue);
-    socket.on("settingsUpdated", fetchSetting);
+  socket.on("settingsUpdated", fetchSetting);
 
-    return () => {
-      socket.off("queueUpdated", fetchQueue);
-      socket.off("settingsUpdated", fetchSetting);
-    };
-  }, []);
+  return () => {
+    socket.off("queueUpdated");
+    socket.off("settingsUpdated", fetchSetting);
+  };
+}, []);
 
   const servingPatient = patients.find((p) => p.status === "serving");
   const waitingPatients = patients.filter((p) => p.status === "waiting");

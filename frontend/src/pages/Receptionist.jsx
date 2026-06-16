@@ -19,17 +19,32 @@ function Receptionist() {
 
   const addPatient = async (e) => {
     e.preventDefault();
-    if (!name.trim()) return alert("Please enter patient name");
+
+    if (!name.trim()) {
+      alert("Please enter patient name");
+      return;
+    }
 
     await axios.post("http://localhost:5000/api/patients", { name });
     setName("");
+    fetchQueue();
   };
 
   const callNext = async () => {
     try {
       await axios.patch("http://localhost:5000/api/patients/call-next");
+      fetchQueue();
     } catch {
       alert("No patients waiting in queue");
+    }
+  };
+
+  const completeCurrent = async () => {
+    try {
+      await axios.patch("http://localhost:5000/api/patients/complete-current");
+      fetchQueue();
+    } catch {
+      alert("No patient is currently serving");
     }
   };
 
@@ -37,23 +52,17 @@ function Receptionist() {
     await axios.patch("http://localhost:5000/api/settings", {
       averageConsultationTime: averageTime,
     });
+
     alert("Average consultation time updated");
   };
 
-  const completeCurrent = async () => {
-  try {
-    await axios.patch("http://localhost:5000/api/patients/complete-current");
-  } catch {
-    alert("No patient is currently serving");
-  }
-};
+  const clearQueue = async () => {
+    const confirmClear = confirm("Are you sure you want to clear the full queue?");
+    if (!confirmClear) return;
 
-const clearQueue = async () => {
-  const confirmClear = confirm("Are you sure you want to clear the full queue?");
-  if (!confirmClear) return;
-
-  await axios.delete("http://localhost:5000/api/patients/clear");
-};
+    await axios.delete("http://localhost:5000/api/patients/clear");
+    fetchQueue();
+  };
 
   useEffect(() => {
     fetchQueue();
@@ -69,6 +78,7 @@ const clearQueue = async () => {
   }, []);
 
   const waitingPatients = patients.filter((p) => p.status === "waiting");
+  const completedPatients = patients.filter((p) => p.status === "completed");
   const servingPatient = patients.find((p) => p.status === "serving");
 
   return (
@@ -90,7 +100,10 @@ const clearQueue = async () => {
               className="border p-3 rounded-lg w-full"
             />
 
-            <button className="bg-blue-600 text-white px-5 py-3 rounded-lg">
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-5 py-3 rounded-lg"
+            >
               Add
             </button>
           </form>
@@ -107,27 +120,27 @@ const clearQueue = async () => {
             <p className="text-gray-500">No patient is being served</p>
           )}
 
-          <button
-  onClick={completeCurrent}
-  disabled={!servingPatient}
-  className="mt-3 bg-orange-600 text-white px-6 py-3 rounded-lg disabled:bg-gray-400"
->
-  Mark Completed
-</button>
+          <div className="flex gap-4 mt-5">
+            <button
+              onClick={completeCurrent}
+              disabled={!servingPatient}
+              className="bg-orange-600 text-white px-6 py-3 rounded-lg disabled:bg-gray-400"
+            >
+              Mark Completed
+            </button>
 
-          <button
-            onClick={callNext}
-            disabled={waitingPatients.length === 0}
-            className="ml-4 mt-5 bg-green-600 text-white px-6 py-3 rounded-lg disabled:bg-gray-400"
-          >
-            Call Next
-          </button>
+            <button
+              onClick={callNext}
+              disabled={waitingPatients.length === 0}
+              className="bg-green-600 text-white px-6 py-3 rounded-lg disabled:bg-gray-400"
+            >
+              Call Next
+            </button>
+          </div>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-xl font-semibold mb-4">
-            Avg Consultation Time
-          </h2>
+          <h2 className="text-xl font-semibold mb-4">Avg Consultation Time</h2>
 
           <div className="flex gap-3">
             <input
@@ -186,36 +199,33 @@ const clearQueue = async () => {
       </div>
 
       <div className="bg-white p-6 rounded-xl shadow mt-6">
-  <h2 className="text-xl font-semibold mb-4">Completed Patients</h2>
+        <h2 className="text-xl font-semibold mb-4">Completed Patients</h2>
 
-  {patients.filter((p) => p.status === "completed").length === 0 ? (
-    <p className="text-gray-500">No completed patients yet</p>
-  ) : (
-    <div className="space-y-3">
-      {patients
-        .filter((p) => p.status === "completed")
-        .map((patient) => (
-          <div
-            key={patient._id}
-            className="flex justify-between border p-4 rounded-lg bg-gray-50"
-          >
-            <span>{patient.name}</span>
-            <span className="font-bold text-gray-600">
-              Token {patient.tokenNumber}
-            </span>
+        {completedPatients.length === 0 ? (
+          <p className="text-gray-500">No completed patients yet</p>
+        ) : (
+          <div className="space-y-3">
+            {completedPatients.map((patient) => (
+              <div
+                key={patient._id}
+                className="flex justify-between border p-4 rounded-lg bg-gray-50"
+              >
+                <span>{patient.name}</span>
+                <span className="font-bold text-gray-600">
+                  Token {patient.tokenNumber}
+                </span>
+              </div>
+            ))}
           </div>
-        ))}
-    </div>
-  )}
+        )}
 
-  <button
-    onClick={clearQueue}
-    className="mt-5 bg-red-600 text-white px-6 py-3 rounded-lg"
-  >
-    Clear Full Queue
-  </button>
-</div>
-
+        <button
+          onClick={clearQueue}
+          className="mt-5 bg-red-600 text-white px-6 py-3 rounded-lg"
+        >
+          Clear Full Queue
+        </button>
+      </div>
     </div>
   );
 }
