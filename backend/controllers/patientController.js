@@ -83,3 +83,39 @@ export const callNextPatient = async (req, res) => {
     });
   }
 };
+
+export const completeCurrentPatient = async (req, res) => {
+  try {
+    const currentServing = await Patient.findOne({ status: "serving" });
+
+    if (!currentServing) {
+      return res.status(404).json({ message: "No patient is currently serving" });
+    }
+
+    currentServing.status = "completed";
+    await currentServing.save();
+
+    const io = req.app.get("io");
+    io.emit("queueUpdated");
+
+    res.json({
+      message: "Patient marked as completed",
+      patient: currentServing,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to complete patient" });
+  }
+};
+
+export const clearQueue = async (req, res) => {
+  try {
+    await Patient.deleteMany({});
+
+    const io = req.app.get("io");
+    io.emit("queueUpdated");
+
+    res.json({ message: "Queue cleared successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to clear queue" });
+  }
+};

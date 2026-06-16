@@ -5,6 +5,7 @@ import http from "http";
 import mongoose from "mongoose";
 import { Server } from "socket.io";
 import patientRoutes from "./routes/patientRoutes.js";
+import settingRoutes from "./routes/settingRoutes.js";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/patients", patientRoutes);
+app.use("/api/settings", settingRoutes);
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);

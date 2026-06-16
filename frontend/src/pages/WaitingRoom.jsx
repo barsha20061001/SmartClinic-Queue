@@ -4,23 +4,34 @@ import socket from "../socket";
 
 function WaitingRoom() {
   const [patients, setPatients] = useState([]);
+  const [averageTime, setAverageTime] = useState(7);
 
   const fetchQueue = async () => {
     const res = await axios.get("http://localhost:5000/api/patients");
     setPatients(res.data);
   };
 
+  const fetchSetting = async () => {
+    const res = await axios.get("http://localhost:5000/api/settings");
+    setAverageTime(res.data.averageConsultationTime);
+  };
+
   useEffect(() => {
     fetchQueue();
-     socket.on("queueUpdated", fetchQueue);
+    fetchSetting();
 
-  return () => {
-    socket.off("queueUpdated", fetchQueue);
-  };
+    socket.on("queueUpdated", fetchQueue);
+    socket.on("settingsUpdated", fetchSetting);
+
+    return () => {
+      socket.off("queueUpdated", fetchQueue);
+      socket.off("settingsUpdated", fetchSetting);
+    };
   }, []);
 
   const servingPatient = patients.find((p) => p.status === "serving");
   const waitingPatients = patients.filter((p) => p.status === "waiting");
+  const estimatedWaitTime = waitingPatients.length * averageTime;
 
   return (
     <div className="min-h-screen bg-green-50 p-6">
@@ -42,11 +53,21 @@ function WaitingRoom() {
         )}
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-xl shadow">
           <h2 className="text-xl font-semibold mb-4">People Waiting</h2>
           <p className="text-5xl font-bold text-blue-600">
             {waitingPatients.length}
+          </p>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h2 className="text-xl font-semibold mb-4">Estimated Wait Time</h2>
+          <p className="text-5xl font-bold text-purple-600">
+            {estimatedWaitTime} min
+          </p>
+          <p className="text-gray-500 mt-2">
+            Based on {averageTime} min per patient
           </p>
         </div>
 
