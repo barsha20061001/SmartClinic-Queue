@@ -45,13 +45,27 @@ function WaitingRoom() {
   const estimatedWaitTime = waitingPatients.length * averageTime;
 
   return (
-    <div className="min-h-screen bg-green-50 p-6">
-      <h1 className="text-3xl font-bold text-green-700 mb-6">
+    <div className="min-h-screen bg-green-50 p-6  bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900">
+        <div className="flex items-center justify-between mb-10">
+
+       <div className="inline-flex items-center gap-2 px-5 py-3 rounded-full
+bg-white/10 backdrop-blur-xl border border-emerald-400/30
+text-emerald-300 font-semibold shadow-lg">
+    <span className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+    Live Sync Active
+</div>
+
+
+      <h1 className="text-center text-6xl font-black mb-8 pb-2 tracking-tight leading-[1.25] bg-gradient-to-r from-pink-300 via-fuchsia-300 to-violet-300 bg-clip-text text-transparent drop-shadow-lg">
         Patient Waiting Room
       </h1>
+       {/* Empty div to balance layout */}
+  <div className="w-48"></div>
+</div>
+    
 
       <div className="bg-white p-8 rounded-xl shadow text-center mb-6">
-        <p className="text-gray-500 mb-2">Now Serving</p>
+        <p className="text-black-800 mb-2">Now Serving</p>
 
         {servingPatient ? (
           <h2 className="text-7xl font-bold text-green-600">

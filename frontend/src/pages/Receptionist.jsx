@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import socket from "../socket";
+import toast from "react-hot-toast";
 
 function Receptionist() {
   const [name, setName] = useState("");
@@ -23,11 +24,12 @@ function Receptionist() {
     e.preventDefault();
 
     if (!name.trim()) {
-      alert("Please enter patient name");
+      toast.error("Please enter patient name");
       return;
     }
 
     await axios.post("http://localhost:5000/api/patients", { name });
+    toast.success("Patient added successfully");
     setName("");
     fetchQueue();
   };
@@ -37,7 +39,7 @@ function Receptionist() {
       await axios.patch("http://localhost:5000/api/patients/call-next");
       fetchQueue();
     } catch {
-      alert("No patients waiting in queue");
+      toast.error("No patients waiting in queue");
     }
   };
 
@@ -46,7 +48,7 @@ function Receptionist() {
       await axios.patch("http://localhost:5000/api/patients/complete-current");
       fetchQueue();
     } catch {
-      alert("No patient is currently serving");
+      toast.error("No patient is currently serving");
     }
   };
 
@@ -55,7 +57,7 @@ function Receptionist() {
       averageConsultationTime: averageTime,
     });
 
-    alert("Average consultation time updated");
+    toast.success("Average consultation time updated");
   };
 
   const clearQueue = async () => {
@@ -63,6 +65,7 @@ function Receptionist() {
     if (!confirmClear) return;
 
     await axios.delete("http://localhost:5000/api/patients/clear");
+    toast.success("Queue cleared successfully");
     fetchQueue();
   };
 
@@ -93,10 +96,22 @@ const completedCount = completedPatients.length;
 const servingCount = servingPatient ? 1 : 0;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold text-blue-700 mb-6">
+    <div className="min-h-screen bg-gray-100 p-6  bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900">
+        <div className="flex items-center justify-between mb-10">
+            <div className="inline-flex items-center gap-2 px-5 py-3 rounded-full
+bg-white/10 backdrop-blur-xl border border-emerald-400/30
+text-emerald-300 font-semibold shadow-lg">
+    <span className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+    Live Sync Active
+</div>
+      <h1 className="text-center text-6xl font-black mb-8 pb-2 tracking-tight leading-[1.25] bg-gradient-to-r from-pink-300 via-fuchsia-300 to-violet-300 bg-clip-text text-transparent drop-shadow-lg">
         Receptionist Dashboard
       </h1>
+
+
+  {/* Empty div to balance layout */}
+  <div className="w-48"></div>
+</div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
 
