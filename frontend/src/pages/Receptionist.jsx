@@ -2,12 +2,27 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import socket from "../socket";
 import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
+
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+} from "recharts";
+
 
 function Receptionist() {
   const [name, setName] = useState("");
   const [patients, setPatients] = useState([]);
   const [averageTime, setAverageTime] = useState(7);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
   
 
   const fetchQueue = async () => {
@@ -21,18 +36,27 @@ function Receptionist() {
   };
 
   const addPatient = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!name.trim()) {
-      toast.error("Please enter patient name");
-      return;
-    }
+  if (!name.trim()) {
+    toast.error("Please enter patient name");
+    return;
+  }
+
+  try {
+    setLoading(true);
 
     await axios.post("http://localhost:5000/api/patients", { name });
+
     toast.success("Patient added successfully");
     setName("");
     fetchQueue();
-  };
+  } catch {
+    toast.error("Failed to add patient");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const callNext = async () => {
     try {
@@ -95,18 +119,54 @@ const waitingCount = waitingPatients.length;
 const completedCount = completedPatients.length;
 const servingCount = servingPatient ? 1 : 0;
 
+const chartData = [
+  { name: "Waiting", value: waitingCount },
+  { name: "Serving", value: servingCount },
+  { name: "Completed", value: completedCount },
+];
+
+const barData = [
+  { status: "Waiting", count: waitingCount },
+  { status: "Serving", count: servingCount },
+  { status: "Completed", count: completedCount },
+];
+
+const COLORS = ["#facc15", "#22c55e", "#a855f7"];
+
   return (
-    <div className="min-h-screen bg-gray-100 p-6  bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900">
+    <div className=" relative min-h-screen w-full overflow-x-hidden bg-gray-100 p-6  bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900">
         <div className="flex items-center justify-between mb-10">
-            <div className="inline-flex items-center gap-2 px-5 py-3 rounded-full
+            <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-6 sm:py-3 rounded-full
 bg-white/10 backdrop-blur-xl border border-emerald-400/30
 text-emerald-300 font-semibold shadow-lg">
     <span className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
     Live Sync Active
 </div>
-      <h1 className="text-center text-6xl font-black mb-8 pb-2 tracking-tight leading-[1.25] bg-gradient-to-r from-pink-300 via-fuchsia-300 to-violet-300 bg-clip-text text-transparent drop-shadow-lg">
+
+
+      <h1 className="text-center text-3xl sm:text-5xl md:text-6xl  font-black mb-8 pb-2 tracking-tight leading-[1.25] bg-gradient-to-r from-pink-300 via-fuchsia-300 to-violet-300 bg-clip-text text-transparent drop-shadow-lg">
         Receptionist Dashboard
       </h1>
+
+       {/* Home Button */}
+        <Link
+        to="/"
+        className="
+        absolute top-8 right-8
+        px-3 py-2 sm:px-6 sm:py-3
+        rounded-xl
+        bg-white/10
+        border
+        border-white/20
+        text-white
+        font-semibold
+        backdrop-blur-md
+        hover:bg-white/20
+        transition
+        "
+        >
+         Home
+        </Link>
 
 
   {/* Empty div to balance layout */}
@@ -137,6 +197,46 @@ text-emerald-300 font-semibold shadow-lg">
 
 </div>
 
+<div className="grid md:grid-cols-2 gap-6 mb-8">
+  <div className="bg-white p-6 rounded-xl shadow">
+    <h2 className="text-xl font-semibold mb-4">Queue Distribution</h2>
+
+    <div className="h-64">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={chartData}
+            dataKey="value"
+            nameKey="name"
+            outerRadius={90}
+            label
+          >
+            {chartData.map((entry, index) => (
+              <Cell key={index} fill={COLORS[index]} />
+            ))}
+          </Pie>
+          <Tooltip />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+
+  <div className="bg-white p-6 rounded-xl shadow">
+    <h2 className="text-xl font-semibold mb-4">Queue Status Overview</h2>
+
+    <div className="h-64">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={barData}>
+          <XAxis dataKey="status" />
+          <YAxis allowDecimals={false} />
+          <Tooltip />
+          <Bar dataKey="count" radius={[8, 8, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+</div>
+
 
 
 
@@ -154,11 +254,19 @@ text-emerald-300 font-semibold shadow-lg">
             />
 
             <button
-              type="submit"
-              className="bg-blue-600 text-white px-5 py-3 rounded-lg"
-            >
-              Add
-            </button>
+  type="submit"
+  disabled={loading}
+  className="bg-blue-600 text-white px-5 py-3 rounded-lg disabled:bg-gray-400 flex items-center gap-2"
+>
+  {loading ? (
+    <>
+      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+      Adding
+    </>
+  ) : (
+    "Add"
+  )}
+</button>
           </form>
         </div>
 

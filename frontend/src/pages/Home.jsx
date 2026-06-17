@@ -20,7 +20,7 @@ from-indigo-600
 via-fuchsia-500
 to-rose-500
 bg-clip-text
-text-transparent
+text-transparent mb-8 
 ">
           Welcome to Smart Clinic Queue
         </h1>
