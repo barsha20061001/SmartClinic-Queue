@@ -6,6 +6,8 @@ function Receptionist() {
   const [name, setName] = useState("");
   const [patients, setPatients] = useState([]);
   const [averageTime, setAverageTime] = useState(7);
+  const [search, setSearch] = useState("");
+  
 
   const fetchQueue = async () => {
     const res = await axios.get("http://localhost:5000/api/patients");
@@ -78,14 +80,50 @@ function Receptionist() {
   }, []);
 
   const waitingPatients = patients.filter((p) => p.status === "waiting");
+  const filteredPatients = waitingPatients.filter((patient) =>
+  patient.name.toLowerCase().includes(search.toLowerCase()) ||
+  patient.tokenNumber.toString().includes(search)
+);
   const completedPatients = patients.filter((p) => p.status === "completed");
   const servingPatient = patients.find((p) => p.status === "serving");
+
+  const totalPatients = patients.length;
+const waitingCount = waitingPatients.length;
+const completedCount = completedPatients.length;
+const servingCount = servingPatient ? 1 : 0;
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <h1 className="text-3xl font-bold text-blue-700 mb-6">
         Receptionist Dashboard
       </h1>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+
+  <div className="bg-blue-600 text-white rounded-xl p-5 shadow-lg">
+    <p className="text-sm opacity-80">Total Patients</p>
+    <h2 className="text-4xl font-bold mt-2">{totalPatients}</h2>
+  </div>
+
+  <div className="bg-yellow-500 text-white rounded-xl p-5 shadow-lg">
+    <p className="text-sm opacity-80">Waiting</p>
+    <h2 className="text-4xl font-bold mt-2">{waitingCount}</h2>
+  </div>
+
+  <div className="bg-green-600 text-white rounded-xl p-5 shadow-lg">
+    <p className="text-sm opacity-80">Serving</p>
+    <h2 className="text-4xl font-bold mt-2">{servingCount}</h2>
+  </div>
+
+  <div className="bg-purple-600 text-white rounded-xl p-5 shadow-lg">
+    <p className="text-sm opacity-80">Completed</p>
+    <h2 className="text-4xl font-bold mt-2">{completedCount}</h2>
+  </div>
+
+</div>
+
+
+
 
       <div className="grid md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-xl shadow">
@@ -167,12 +205,19 @@ function Receptionist() {
 
       <div className="bg-white p-6 rounded-xl shadow mt-6">
         <h2 className="text-xl font-semibold mb-4">Waiting Queue</h2>
+        <input
+    type="text"
+    placeholder="Search by patient name or token..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    className="w-full border rounded-lg p-3 mb-5"
+/>
 
-        {waitingPatients.length === 0 ? (
-          <p className="text-gray-500">No patients waiting</p>
+        {filteredPatients.length === 0 ? (
+          <p className="text-gray-500">No matching patient found</p>
         ) : (
           <div className="space-y-3">
-            {waitingPatients.map((patient, index) => (
+            {filteredPatients.map((patient, index) => (
               <div
                 key={patient._id}
                 className="flex justify-between border p-4 rounded-lg"
