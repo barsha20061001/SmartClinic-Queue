@@ -26,12 +26,12 @@ function Receptionist() {
   
 
   const fetchQueue = async () => {
-    const res = await axios.get("http://localhost:5000/api/patients");
+    const res = await axios.get("https://smartclinic-backend-py33.onrender.com/api/patients");
     setPatients(res.data);
   };
 
   const fetchSetting = async () => {
-    const res = await axios.get("http://localhost:5000/api/settings");
+    const res = await axios.get("https://smartclinic-backend-py33.onrender.com/api/settings");
     setAverageTime(res.data.averageConsultationTime);
   };
 
@@ -46,7 +46,7 @@ function Receptionist() {
   try {
     setLoading(true);
 
-    await axios.post("http://localhost:5000/api/patients", { name });
+    await axios.post("https://smartclinic-backend-py33.onrender.com/api/patients", { name });
 
     toast.success("Patient added successfully");
     setName("");
@@ -60,7 +60,7 @@ function Receptionist() {
 
   const callNext = async () => {
     try {
-      await axios.patch("http://localhost:5000/api/patients/call-next");
+      await axios.patch("https://smartclinic-backend-py33.onrender.com/api/patients/call-next");
       fetchQueue();
     } catch {
       toast.error("No patients waiting in queue");
@@ -69,7 +69,7 @@ function Receptionist() {
 
   const completeCurrent = async () => {
     try {
-      await axios.patch("http://localhost:5000/api/patients/complete-current");
+      await axios.patch("https://smartclinic-backend-py33.onrender.com/api/patients/complete-current");
       fetchQueue();
     } catch {
       toast.error("No patient is currently serving");
@@ -77,7 +77,7 @@ function Receptionist() {
   };
 
   const updateAverageTime = async () => {
-    await axios.patch("http://localhost:5000/api/settings", {
+    await axios.patch("https://smartclinic-backend-py33.onrender.com/api/settings", {
       averageConsultationTime: averageTime,
     });
 
@@ -88,7 +88,7 @@ function Receptionist() {
     const confirmClear = confirm("Are you sure you want to clear the full queue?");
     if (!confirmClear) return;
 
-    await axios.delete("http://localhost:5000/api/patients/clear");
+    await axios.delete("https://smartclinic-backend-py33.onrender.com/api/patients/clear");
     toast.success("Queue cleared successfully");
     fetchQueue();
   };

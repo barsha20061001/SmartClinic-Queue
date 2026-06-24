@@ -8,12 +8,12 @@ function WaitingRoom() {
   const [averageTime, setAverageTime] = useState(7);
 
   const fetchQueue = async () => {
-    const res = await axios.get("http://localhost:5000/api/patients");
+    const res = await axios.get("https://smartclinic-backend-py33.onrender.com/api/patients");
     setPatients(res.data);
   };
 
   const fetchSetting = async () => {
-    const res = await axios.get("http://localhost:5000/api/settings");
+    const res = await axios.get("https://smartclinic-backend-py33.onrender.com/api/settings");
     setAverageTime(res.data.averageConsultationTime);
   };
 
